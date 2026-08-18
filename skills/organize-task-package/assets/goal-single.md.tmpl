@@ -2,7 +2,7 @@
 
 ## 1. Objective and boundaries
 
-- Objective: complete every work item under frozen `design/**` and obtain independent Reviewer approval.
+- Objective: complete every work item under frozen `design/**` and obtain approval under the configured review mode.
 - Non-goals: defined by `design/00_discussion-decisions.md` and each part.
 - Execution authorization: `not_authorized`; change to `authorized` only after explicit user instruction.
 - Active Goal: `not_created`.
@@ -11,8 +11,8 @@
 ## 2. Roles and configuration
 
 - Worker: `main`, default `gpt-5.6-sol/high`.
-- Reviewer: Worker-managed pre-execution subagent `main / Pre-execution Reviewer`, default `gpt-5.6-sol/xhigh`.
-- Reviewer writes only `review/reviewer-main.md`; Worker writes execution receipts and updates this file from review receipts.
+- Reviewer mode: `inherited_subagent` by default; the Reviewer inherits the Worker's model/reasoning and full pre-implementation history. Explicit alternative: `self_review` with no subagent.
+- The inherited Reviewer writes only `review/reviewer-main.md`; in `self_review`, the Worker writes clearly labeled `SELF` receipts there.
 
 ### 2.1 Session lineage
 
@@ -28,15 +28,15 @@
 | Worker session mode | `current_task / fork_current / reuse_fixed / fresh` |
 | Worker fork source | To fill |
 | Reviewer label | `<Worker label> / Pre-execution Reviewer` |
-| Reviewer context kind/construction | new nested subagent by default; state owner, spawn time, and inherited-turn mode |
+| Reviewer context kind/construction | new nested subagent by default after Worker task/code reading; explicit `self_review` creates none |
 | Reviewer task or subagent ID | To create or reuse |
 | Reviewer session mode | `isolated_subagent` by default; alternatives require confirmation |
-| Reviewer fork source | finite Worker context at pre-execution boundary |
-| Reviewer owner/context mode | `worker`; `pre_execution_inherited_context` |
+| Reviewer fork source | full Worker history at pre-execution boundary |
+| Reviewer owner/context mode | `worker`; `full_history_pre_execution` / `self_review` |
 | pre-execution or isolation boundary | To fill |
 | execution dispatch time | Must respect the selected independence construction |
 | Worker model enforcement | Requested model/reasoning; method; `planned / confirmed / enforced / mismatch`; receipt |
-| Reviewer model enforcement | Requested model/reasoning; method; `planned / confirmed / enforced / mismatch`; receipt |
+| Reviewer model enforcement | inherited Worker model/reasoning by default; method/status/receipt, or `self_review` |
 
 ## 3. Launch-configuration confirmation
 
@@ -74,11 +74,11 @@ Allowed states: `pending`, `implemented_pending_review`, and `approved`.
 
 ## 6. Worker rules
 
-1. After authorization, apply the confirmed topology. By default, create the Worker-managed Reviewer subagent from finite frozen context and obtain `READY_REVIEW`; record the isolation construction.
-2. Only after that receipt, create an active Goal that references this file's absolute path; do not set an unrequested token budget.
+1. After authorization, read the frozen package and code, then apply the confirmed review mode. By default, create the full-history inherited Reviewer before implementation and obtain `READY_REVIEW`; for `self_review`, record `SELF_REVIEW_READY` without a subagent.
+2. Only after that readiness receipt, create an active Goal that references this file's absolute path; do not set an unrequested token budget.
 3. Complete items one by one and update `execution/worker-main.md`.
-4. After self-review, mark the item `implemented_pending_review` and request review from the same Reviewer.
-5. Mark `approved` only after an exact Reviewer approval receipt.
+4. After implementation self-check, mark the item `implemented_pending_review` and invoke the configured review mode.
+5. Mark `approved` only after an exact `REVIEW` or `SELF` approval receipt.
 6. After all items pass, complete each part audit and final consistency checks.
 
 ## 7. Completion conditions

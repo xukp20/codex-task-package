@@ -12,7 +12,7 @@ Manage one bounded task as one directory and keep these concerns separate:
 - user discussion and frozen decisions;
 - executable design and validation plans;
 - factual Worker execution receipts;
-- independent Reviewer findings and verdicts;
+- Reviewer or explicit self-review findings and verdicts;
 - aggregate GOAL state.
 
 Always follow the target repository's `AGENTS.md`, coordination files, branch rules, documentation-language rules, and latest user instructions. This skill supplies defaults; it does not override project policy.
@@ -115,10 +115,10 @@ End each part with an integrated audit across its work items: combined behavior,
 Each work item has exactly one state:
 
 1. `pending`: implementation or execution is incomplete;
-2. `implemented_pending_review`: the Worker completed it and recorded evidence, but independent review has not approved it;
-3. `approved`: the Reviewer approved an exact snapshot and the Worker applied that receipt to the GOAL.
+2. `implemented_pending_review`: the Worker completed it and recorded evidence, but the configured review mode has not approved it;
+3. `approved`: the configured review mode approved an exact snapshot and the Worker applied that receipt to the GOAL.
 
-The Reviewer writes a per-item verdict only in the review record and notifies the Worker. The Worker may mark `approved` only when an exact review receipt exists. Never replace this state machine with binary checkboxes.
+With `reviewer_mode: inherited_subagent` (default), the Reviewer writes the verdict and notifies the Worker. With explicit `reviewer_mode: self_review`, the Worker writes a concise `SELF` receipt after checking scope, validation, and task-document coverage; do not describe that receipt as independent review. Mark `approved` only when the selected mode has an exact receipt. Never replace this state machine with binary checkboxes.
 
 Use README only for navigation and derived status. Use GOAL as the aggregate state index and execution/review documents as evidence truth. Reconcile all three at every milestone.
 
@@ -134,7 +134,7 @@ After the task documents, design gates, and validation plan are ready, do not im
 
 Inherit history only when the task family matches, sessions remain usable, no incompatible active Goal exists, and permissions and worktrees are compatible. Show each concrete value and its source. If a historical value is invalid, show the fallback reason instead of guessing silently.
 
-Present one concise launch confirmation covering: single or parallel execution, current-session role, Worker/Reviewer task and session modes, requested models and reasoning, the mechanism that will enforce those settings, GOAL, branch/worktree/baseline, review cadence, validation scope, commit/notification/cleanup policy, and external actions such as real providers, servers, migrations, Release, or push. Freeze and execute only after the user confirms the bundle or explicitly edits individual fields.
+Present one concise launch confirmation covering: single or parallel execution, current-session role, Worker and review mode, task/session construction, model inheritance or explicit overrides, GOAL, branch/worktree/baseline, review cadence, validation scope, commit/notification/cleanup policy, and external actions such as real providers, servers, migrations, Release, or push. Freeze and execute only after the user confirms the bundle or explicitly edits individual fields.
 
 Use human-readable task titles or stable role labels in every user-facing launch summary. Resolve the Codex sidebar title when task tools expose it. Do not lead with opaque task, thread, host, or subagent IDs; keep those only in durable execution/review receipts for exact routing. If no title exists, derive a readable label such as `<task title> — Worker` or `<Worker label> / Pre-execution Reviewer`.
 
@@ -147,32 +147,32 @@ Store a single-Worker configuration in the root `GOAL.md`. Store parallel aggreg
 Defaults:
 
 - Worker: `gpt-5.6-sol`, reasoning `high`;
-- Reviewer: `gpt-5.6-sol`, reasoning `xhigh`.
+- Reviewer mode: `inherited_subagent` by default. The Reviewer inherits the selected Worker's model and reasoning unless the user explicitly chooses another supported topology and configuration.
 
 Treat role models as requested configuration, not as facts, until the target context accepts them. Enforce and record them as follows:
 
 - `current_task`: record the actual model and reasoning; a turn cannot change its own model mid-turn;
 - `fresh`: pass the confirmed model and reasoning when creating the task and record the accepted launch receipt;
 - `fork_current`, `fork_worker_pre_execution`, `shared_planning_base`, or `reuse_fixed`: after selecting the target, send a short configuration-only liveness turn with the confirmed model and reasoning, wait for `READY`, then send the formal dispatch with the same explicit settings;
-- `isolated_subagent`: pass the confirmed model and reasoning on spawn and use no inherited turns or a finite context that preserves the required independence; a full-history child inherits its parent and is not an override mechanism.
+- `isolated_subagent`: for the default Reviewer, use full pre-implementation history and parent model/reasoning inheritance. For an explicitly different or blind Reviewer, use the confirmed finite/no-history construction and separate configuration receipt.
 
-Do not silently fall back while claiming the confirmed configuration. If the target rejects the model/reasoning pair, reports a mismatch, or cannot provide the required isolation, stop before execution and return the discrepancy for a new decision. The Reviewer must also remain independent of the implementation under review.
+Do not silently fall back while claiming the confirmed configuration. If the target rejects the model/reasoning pair, reports a mismatch, or cannot provide the required isolation, stop before execution and return the discrepancy for a new decision. A separate Reviewer must remain independent of the implementation under review; `self_review` must remain explicitly labeled.
 
-For a single Worker, choose among four supported topologies: separate Worker and Reviewer tasks; current task as Worker with an independent Reviewer; separate Worker with current task as Reviewer; or separate Worker with a Worker-managed isolated Reviewer subagent. Fixed and fresh tasks remain available.
+For a single Worker, choose among the supported topologies in [session-topology.md](references/session-topology.md). The default is a Worker-managed Reviewer subagent that inherits the Worker's complete pre-implementation history. Explicit `self_review` is also supported when the user does not want a separate Reviewer.
 
-Choose the least expensive topology that preserves required independence and auditability. A context may implement or approve a snapshot, never both. A Reviewer subagent created after implementation is valid only when it inherits no implementation reasoning. Apply all role, isolation, selection, and lineage rules in [session-topology.md](references/session-topology.md).
+Choose the least expensive topology that preserves the confirmed auditability. In independent modes, a context may implement or approve a snapshot, never both. Explicit `self_review` permits the Worker to approve only with a labeled `SELF` receipt. A Reviewer subagent created after implementation is valid only when it inherits no implementation reasoning. Apply all role, isolation, selection, and lineage rules in [session-topology.md](references/session-topology.md).
 
-Default single-Worker topology: use the selected Worker plus a Worker-managed pre-execution Reviewer subagent. After launch confirmation and Worker configuration enforcement, the Worker reads the frozen package and creates the Reviewer before creating the active Goal, beginning implementation reasoning, or modifying product state. Give the Reviewer a finite inherited slice containing the frozen design and formal dispatch, explicit Reviewer model/reasoning, and a readiness-only prompt. Wait for its `READY_REVIEW` receipt, then let the Worker implement. Reuse that same Reviewer for exact-snapshot review and re-review. Use another topology only when the user chooses it or current constraints make this construction invalid.
+Default single-Worker topology: after launch confirmation, the selected Worker reads the frozen package, project rules, current code, HEAD, and validation boundary. Before implementation reasoning, active Goal creation, or product writes, it creates a Reviewer subagent with full current history and no model/reasoning override, so the Reviewer inherits the Worker's configuration and pre-implementation understanding. Wait for `READY_REVIEW`, then implement and reuse the same Reviewer for exact-snapshot review and re-review. With explicit `self_review`, do not create a subagent; the Worker performs the concise receipt-based check itself.
 
 Execution loop:
 
-1. The Worker rereads the task package, project rules, coordination state, current HEAD, and working tree.
-2. After explicit execution authorization, the Worker creates the pre-execution Reviewer subagent, records its enforced configuration and `READY_REVIEW` receipt, and keeps it available for later review. The Reviewer does not create a Goal.
-3. Only after that receipt does the Worker create an active Goal referencing the assigned `GOAL.md` and begin implementation.
+1. The Worker rereads the task package, project rules, coordination state, current code, current HEAD, working tree, and validation boundary.
+2. After explicit execution authorization, apply the confirmed review mode. By default the Worker creates the full-history pre-execution Reviewer subagent, records inherited configuration and `READY_REVIEW`, and keeps it available. In `self_review` mode, record that no subagent is created.
+3. Only after the selected review-mode readiness receipt does the Worker create an active Goal referencing the assigned `GOAL.md` and begin implementation.
 4. The Worker completes one item, self-checks it, and appends actual paths, deviations, commands, results, durations, commits, and residual risks to the execution record.
-5. The Worker marks the item `implemented_pending_review` and asks the same Reviewer to inspect the exact snapshot.
-6. The Reviewer writes findings, evidence, recommended validation, and an item verdict only in the review record.
-7. The Worker fixes findings and requests another iteration. After approval, the Worker marks the item `approved`.
+5. The Worker marks the item `implemented_pending_review` and invokes the selected review mode on the exact snapshot.
+6. The inherited Reviewer writes an independent verdict, or the Worker writes a concise `SELF` receipt covering scope, validation, task-document goals, and residual risk.
+7. The Worker fixes findings and repeats the selected check. After an exact approval receipt, the Worker marks the item `approved`.
 8. After all items in a part are approved, run the part-level integrated audit.
 9. After all parts pass, complete final validation, commit-scope inspection, document reconciliation, and cleanup.
 
@@ -189,7 +189,7 @@ Add `goals/` and `coordination/` to parallel packages:
 - record commits, merge order, conflicts, integration validation, and cleanup in `coordination/integration.md`;
 - normally isolate code-writing Workers in separate worktrees/branches unless project rules and disjoint write scopes make a shared tree safe;
 - let Workers notify the Orchestrator about cross-lane decisions, blockers, pauses, completion, and integration needs;
-- fork each Worker from the same frozen planning boundary, then fork its Reviewer before that Worker starts implementation;
+- fork each Worker from the same frozen planning boundary, then let it read its package/code and create its inherited Reviewer before implementation, unless `self_review` was confirmed;
 - clean a worktree only after review, commit, clean-state verification, and confirmed integration. Preserve any unmerged or dirty lane.
 
 Read [parallel-orchestration.md](references/parallel-orchestration.md) for the full protocol.
@@ -210,7 +210,7 @@ Claim completion only when all conditions hold:
 - execution and validation evidence is complete, with failures and interruptions preserved;
 - current implementation or artifacts agree with the documents, and planned behavior is not presented as implemented;
 - Git, worktrees, external runs, and sensitive data are closed within user boundaries;
-- no blocking Reviewer finding remains open;
+- no blocking finding under the configured review mode remains open;
 - GOAL, README, execution, review, and coordination state agree.
 
 Use [observed-lessons.md](references/observed-lessons.md) as the final audit checklist.

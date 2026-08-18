@@ -40,7 +40,7 @@ Responsibilities:
 - `design/00_discussion-decisions.md`: original goals, confirmed decisions, rejected alternatives, open gates, and sources.
 - `design/NN_<part>.md`: executable work items, design, impact scope, validation, and part audit.
 - `execution/worker-main.md`: append-only factual Worker receipts.
-- `review/reviewer-main.md`: independent findings, per-item verdicts, and re-review history.
+- `review/reviewer-main.md`: inherited Reviewer findings or explicitly labeled self-review receipts, per-item verdicts, and re-review history.
 
 GOAL, execution, and review use human-readable task/role labels and also retain internal task or subagent IDs, `fork_current` / `reuse_fixed` / `fresh` modes, fork sources, and the pre-execution fork point in technical lineage. Root GOAL stores launch recommendations, provenance, confirmation, and actual values. Do not add a duplicate `LAUNCH.md`.
 

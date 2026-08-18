@@ -12,7 +12,7 @@ Rule: keep only navigation and derived status in README. Recompute summaries fro
 
 Some GOAL files used one checked box for both “Worker finished” and “system confirmed correct,” making independent-review regressions impossible to represent accurately.
 
-Rule: enforce the three-state model. Implementation is not approval; approval binds an exact review receipt to an exact snapshot.
+Rule: enforce the three-state model. Implementation is not approval; approval binds an exact `REVIEW` or explicitly selected `SELF` receipt to an exact snapshot.
 
 ## 3. Design and execution are mixed
 

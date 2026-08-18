@@ -167,13 +167,14 @@ def assigned_parts_text(parts: list[Part], assigned_ids: list[str]) -> str:
 
 def worker_table(workers: list[Worker]) -> str:
     lines = [
-        "| Worker | Label | Worker model | Session mode | Worker enforcement | Reviewer | Reviewer model | Reviewer source | Reviewer enforcement |",
+        "| Worker | Label | Worker model | Session mode | Worker enforcement | Review mode | Reviewer | Reviewer source | Reviewer enforcement |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     lines.extend(
         f"| `{worker.worker_id}` | {worker.label} | `gpt-5.6-sol/high` | "
-        f"`fork_current` | `planned`; receipt to fill | `reviewer-{worker.worker_id}` | "
-        f"`gpt-5.6-sol/xhigh` | `fork_worker_pre_execution` | `planned`; receipt to fill |"
+        f"`fork_current` | `planned`; receipt to fill | `inherited_subagent` | "
+        f"`reviewer-{worker.worker_id}` (inherits Worker settings) | "
+        f"full Worker history at pre-execution boundary | `planned`; receipt to fill |"
         for worker in workers
     )
     return "\n".join(lines)
@@ -185,7 +186,7 @@ def build_single(temp_root: Path, *, common: dict[str, str], parts: list[Part]) 
         "DESIGN_INDEX": part_index(parts),
         "GOAL_INDEX": "",
         "EXECUTION_INDEX": "- [Worker execution record](execution/worker-main.md)",
-        "REVIEW_INDEX": "- [Independent Reviewer record](review/reviewer-main.md)",
+        "REVIEW_INDEX": "- [Review record](review/reviewer-main.md)",
         "COORDINATION_INDEX": "",
     }
     write_rendered(temp_root / "README.md", "task-readme.md.tmpl", readme_values)
@@ -231,11 +232,11 @@ def build_parallel(
         for part_id in part_ids
     }
     readme_values = common | {
-        "EXECUTION_MODE": "Confirmed parallel execution with one-to-one Worker/Reviewer pairing",
+        "EXECUTION_MODE": "Confirmed parallel execution with per-lane review modes",
         "DESIGN_INDEX": part_index(parts),
         "GOAL_INDEX": "- Worker GOALs under `goals/`",
         "EXECUTION_INDEX": "- Worker execution records under `execution/`",
-        "REVIEW_INDEX": "- Independent Reviewer records under `review/`",
+        "REVIEW_INDEX": "- Review records under `review/`",
         "COORDINATION_INDEX": "- [Parallel coordination entry](coordination/README.md)",
     }
     write_rendered(temp_root / "README.md", "task-readme.md.tmpl", readme_values)

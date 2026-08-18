@@ -1,4 +1,4 @@
-# Worker Execution and Independent Review
+# Worker Execution and Review
 
 ## Contents
 
@@ -10,12 +10,13 @@
 ## 1. Default roles
 
 - Worker: `gpt-5.6-sol/high`.
-- Reviewer: `gpt-5.6-sol/xhigh`.
-- A Reviewer must not review code or artifacts it implemented or integrated.
+- Reviewer mode: `inherited_subagent` by default; it inherits the Worker's model and reasoning.
+- Explicit `self_review` creates no separate Reviewer and must not be described as independent.
+- An independent Reviewer must not review code or artifacts it implemented or integrated.
 - A requested model is not effective until the target creation, configuration handshake plus formal dispatch, current-task audit, or explicit subagent spawn has an enforcement receipt.
 - If a requested configuration is unavailable, stop before execution and record `mismatch`; do not silently accept a fallback while claiming the request.
 
-The Reviewer may be the read-only current task, a separate task, or an isolated subagent. For a single Worker, default to a Worker-managed Reviewer subagent created before the active Goal, implementation reasoning, or product writes. It may inherit the frozen design and formal dispatch but no Worker implementation reasoning. Do not bypass product authorization rules merely to create an appearance of independence.
+The Reviewer may be the read-only current task, a separate task, or a nested subagent. For a single Worker, default to a full-history Worker-managed subagent created after task/code reading but before active Goal creation, implementation reasoning, or product writes. `self_review` is available only when selected in the launch configuration.
 
 Apply [session-topology.md](session-topology.md) before launch. Record how the selected topology excludes implementation context; a pre-execution fork is one valid construction, not the only one.
 
@@ -31,8 +32,8 @@ Before starting, the Worker must:
 6. leave token budget unset unless the user specified one;
 7. record Worker/Reviewer task or subagent IDs, session modes, sources, owners, and independence construction;
 8. verify an `enforced` model/reasoning receipt for every assigned context;
-9. for the default single-Worker topology, create the Reviewer subagent with a readable label and finite inherited pre-execution context, then record its internal ID and `READY_REVIEW` receipt;
-10. verify that the Reviewer context excludes implementation reasoning for this batch;
+9. apply the confirmed review mode: create the default full-history inherited Reviewer and record `READY_REVIEW`, or record `SELF_REVIEW_READY` without creating a subagent;
+10. for independent review, verify that the Reviewer context excludes implementation reasoning for this batch;
 11. only then create the Worker active Goal, record its ID in the technical receipt, and begin implementation.
 
 ## 3. Per-item execution receipts
@@ -66,7 +67,7 @@ A review request must identify:
 
 The Reviewer must inspect the real implementation or artifact, not only the Worker summary or test names.
 
-## 5. Reviewer outputs
+## 5. Review outputs
 
 Append a record for every iteration containing:
 
@@ -80,7 +81,7 @@ Append a record for every iteration containing:
 - part-level integrated-audit verdict;
 - uninspected scope and residual risk.
 
-The Reviewer is read-only for product files and writes only its review record. It notifies the Worker rather than repairing findings itself.
+An inherited Reviewer is read-only for product files and writes only its review record. In `self_review`, the Worker writes a concise record covering exact snapshot, design/document coverage, validation, findings, residual risk, and `SELF` verdict.
 
 ## 6. State transitions
 
@@ -88,8 +89,8 @@ The Reviewer is read-only for product files and writes only its review record. I
 pending
   -> Worker completes the item and records evidence
      -> implemented_pending_review
-        -> Reviewer rework_required: remain in this state; Worker repairs
-        -> Reviewer approved: Worker verifies receipt and marks approved
+        -> selected review mode rework_required: remain in this state; Worker repairs
+        -> selected review mode approved: Worker verifies REVIEW or SELF receipt and marks approved
 ```
 
 Any later relevant implementation change invalidates the old approval. Return the item to `implemented_pending_review` and review the new exact snapshot.

@@ -33,7 +33,7 @@ The current task acts as Orchestrator and:
 - integrates reviewed outputs and runs integration validation;
 - closes worktrees and branches.
 
-By default, fork every Worker from one frozen planning boundary and fork its Reviewer before Worker execution. Fixed or fresh sessions are explicit overrides; see [session-topology.md](session-topology.md).
+By default, fork every Worker from one frozen planning boundary. After each Worker reads its package, code, and validation boundary, it creates a full-history inherited Reviewer before implementation. Fixed, fresh, or `self_review` modes are explicit overrides; see [session-topology.md](session-topology.md).
 
 The Orchestrator normally has no active Goal and does not occupy an execution loop merely to wait. Respond to task messages or state receipts.
 
@@ -69,7 +69,7 @@ A shared tree is acceptable only when project rules require it, write scopes are
 
 ## 5. One-to-one review
 
-Pair each parallel Worker with an independent Reviewer. One Reviewer may sequentially inspect unrelated lanes but may not review a range it implemented or integrated.
+By default, pair each parallel Worker with an inherited pre-execution Reviewer. Explicit `self_review` lanes create no separate Reviewer and must label their receipts accordingly. One independent Reviewer may sequentially inspect unrelated lanes but may not review a range it implemented or integrated.
 
 Each lane uses:
 

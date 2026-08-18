@@ -4,7 +4,7 @@
 
 - Worker ID: `{{WORKER_ID}}`
 - Default model: `gpt-5.6-sol/high`
-- Reviewer: `reviewer-{{WORKER_ID}}`, default `gpt-5.6-sol/xhigh`
+- Reviewer mode: `inherited_subagent` by default, using Worker model/reasoning; explicit `self_review` creates no subagent
 - Assigned parts: {{ASSIGNED_PARTS}}
 - Execution record: `../execution/{{WORKER_ID}}.md`
 - Review record: `../review/reviewer-{{WORKER_ID}}.md`
@@ -18,8 +18,8 @@
 - Worker session mode: `fork_current` (default) / `reuse_fixed` / `fresh`.
 - Worker fork source: To fill.
 - Reviewer task ID: To create or reuse.
-- Reviewer session mode: `fork_worker_pre_execution` (default) / `shared_planning_base` / `reuse_fixed` / `fresh`.
-- Reviewer fork source: To fill.
+- Reviewer session mode: `isolated_subagent` with full pre-execution history (default) / `self_review` / other confirmed topology.
+- Reviewer source: full Worker history after task/code reading by default; To fill.
 - Pre-execution fork point: To fill.
 - Execution dispatch time: must be later than Reviewer fork point.
 - Worker requested model/reasoning, enforcement method/status, and receipt: To fill.
@@ -42,10 +42,10 @@
 ## 4. Worker rules
 
 1. Write only the assigned lane; do not modify root GOAL or another Worker's records.
-2. After user authorization, create an active Goal referencing this file's absolute path.
-3. Start execution only after the Worker and Reviewer configuration receipts are `enforced`; report any mismatch instead of silently falling back.
-4. For each completed item, update execution, mark `implemented_pending_review`, and request the lane Reviewer.
-5. Mark `approved` only after an explicit approval receipt.
+2. After user authorization, read the assigned package/code and establish `READY_REVIEW` from the inherited Reviewer or `SELF_REVIEW_READY` for explicit self-review.
+3. Only then create an active Goal referencing this file's absolute path and start execution; report any configuration mismatch instead of silently falling back.
+4. For each completed item, update execution, mark `implemented_pending_review`, and invoke the configured review mode.
+5. Mark `approved` only after an explicit `REVIEW` or `SELF` receipt.
 6. Notify the Orchestrator about cross-lane issues, shared hotspots, pauses, or integration needs.
 
 ## 5. Completion conditions

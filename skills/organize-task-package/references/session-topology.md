@@ -2,7 +2,7 @@
 
 ## Contents
 
-- Independence invariant
+- Review modes and independence
 - Supported single-Worker topologies
 - Current-task roles
 - Isolated Reviewer subagents
@@ -10,13 +10,14 @@
 - Selection guidance and lineage
 - Review handoff
 
-## 1. Independence invariant
+## 1. Review modes and independence
 
-The Worker needs complete discussion and design context. The Reviewer needs enough of the same domain context to evaluate the exact result, but must not inherit or participate in the implementation reasoning under review.
+The Worker needs complete discussion, design, code, and validation context. Select one review mode explicitly:
 
-Independence is about implementation context, not necessarily a separate user-visible task. A current task, forked task, fixed task, fresh task, or isolated subagent may be the Reviewer when the role constraints below are satisfied.
+- `inherited_subagent` (default): the Worker creates a Reviewer after reading the task and code but before implementation. The Reviewer inherits the Worker's full pre-implementation history and configuration, but none of the later implementation reasoning.
+- `self_review`: no separate Reviewer is created. The Worker performs a concise exact-snapshot check and records a `SELF` receipt. This mode must not be described as independent review.
 
-Never let one context both implement and approve the same snapshot. If no independent context is available, record only self-review and keep the item `implemented_pending_review`.
+For every independent topology, never let one context both implement and approve the same snapshot. `self_review` is an explicit policy exception chosen for lower-overhead acceptance, not independent evidence.
 
 ## 2. Supported single-Worker topologies
 
@@ -49,12 +50,12 @@ current task = planning + Reviewer
 
 Use this when the current task already understands the frozen design and should supervise a separate Worker. Once execution starts, the current task must remain read-only for product implementation, must not take over Worker fixes, and normally has no active Goal. Planning participation does not invalidate review independence; implementation participation does.
 
-### 2.4 Separate Worker task with a Worker-managed Reviewer subagent
+### 2.4 Worker-managed inherited Reviewer subagent (default)
 
 ```text
 current task dispatches Worker task
-  -> Worker reads the frozen package and formal dispatch
-  -> Worker creates Reviewer subagent at the pre-execution boundary
+  -> Worker reads the frozen package, code, HEAD, and validation boundary
+  -> Worker creates a full-history Reviewer subagent at the pre-execution boundary
   -> Reviewer returns READY_REVIEW without implementation work
   -> Worker creates the active Goal and implements
   -> Worker invokes the same Reviewer on an exact snapshot
@@ -62,7 +63,17 @@ current task dispatches Worker task
   -> Worker repairs and repeats
 ```
 
-This is the default single-Worker topology. Use it for a self-contained package where the Worker runs the review loop autonomously without another user-visible Reviewer task. The parent Worker orchestrates the Reviewer but must create it before implementation, must not provide implementation reasoning, and must not edit the Reviewer's verdict.
+This is the default single-Worker topology. Spawn with full inherited history and no model/reasoning override, so the Reviewer receives the Worker's completed pre-execution reading and inherits its configuration. The Worker must create it before implementation reasoning or product writes and must not edit its verdict.
+
+### 2.5 Explicit self-review
+
+```text
+Worker reads and implements
+  -> Worker checks the exact snapshot against design, validation, and document goals
+  -> Worker records a SELF receipt
+```
+
+Use only when the launch configuration explicitly sets `reviewer_mode: self_review`. Keep the same three work-item states, but identify the receipt source as self-review and do not claim independent approval.
 
 ## 3. Current-task role constraints
 
@@ -72,8 +83,8 @@ When current task is Worker:
 
 - it creates the active Goal after authorization;
 - it writes execution and applies Reviewer receipts to GOAL;
-- its Reviewer must be a separate independent task or isolated subagent;
-- the current task cannot also be the Reviewer.
+- in an independent mode, its Reviewer must be a separate task or subagent and the current task cannot also be that Reviewer;
+- in explicit `self_review`, the current task may issue only clearly labeled `SELF` receipts.
 - record the current task's actual model and reasoning; if they do not satisfy the confirmed Worker configuration, select another Worker instead of claiming the default.
 
 When current task is Reviewer:
@@ -86,9 +97,9 @@ When current task is Reviewer:
 
 ## 4. Isolated Reviewer subagents
 
-An isolated Reviewer subagent is valid only if its context excludes the Worker's implementation reasoning. Use one of these constructions:
+An inherited Reviewer subagent is valid only if its context excludes the Worker's implementation reasoning. Use one of these constructions:
 
-1. default: create it from the Worker at the pre-execution boundary with a finite inherited slice containing the frozen package and formal dispatch, obtain `READY_REVIEW`, and later provide exact review artifacts; or
+1. default: after the Worker finishes reading the task package and code, create it at the pre-execution boundary with full inherited history and inherited model/reasoning, obtain `READY_REVIEW`, and later provide exact review artifacts; or
 2. explicit alternative: create it after implementation with no inherited turns, then provide only frozen design, execution receipts, exact snapshot, and known validation.
 
 A full-history child spawned from the Worker after implementation is not independent and cannot approve.
@@ -105,7 +116,7 @@ Record:
 
 The Reviewer subagent never creates an active Goal. In the default construction, the Worker must receive `READY_REVIEW` before creating its own active Goal, beginning implementation reasoning, or writing product state. The Reviewer's durable output belongs in the same independent review document used by a task-based Reviewer. For repeated re-review, follow up with the same Reviewer; do not replace an unfavorable Reviewer silently.
 
-For an exact subagent override, spawn with an explicit model/reasoning pair and a finite inherited-turn count for the default pre-execution construction. Use the smallest slice that contains the frozen design and formal dispatch, normally the last few turns, and repeat the canonical package paths in the spawn prompt. A full-history spawn inherits the parent configuration and does not accept an override; after Worker implementation it also violates Reviewer independence. Native Codex custom-agent settings, explicit spawn settings, `[agents]` defaults, and parent inheritance are separate precedence layers, so record which layer selected the effective configuration rather than assuming the parent task controls every nested Agent.
+For the default construction, spawn with full history and omit explicit model/reasoning overrides; parent inheritance is the enforcement mechanism. If the user requests a different Reviewer model or blind review, select an explicit alternative before execution and record its finite/no-history boundary and configuration receipt. A full-history spawn after Worker implementation violates independence.
 
 ## 5. Fixed and fresh sessions
 
@@ -128,8 +139,9 @@ Choose the least expensive topology that preserves the required independence and
 | Existing fixed/forked Worker does implementation | Current task as Reviewer when it remains read-only |
 | Default single-Worker package | Selected Worker plus Worker-managed pre-execution Reviewer subagent |
 | Strict blind review or stale planning context | Fresh Reviewer task or isolated no-history subagent |
+| User explicitly declines a separate Reviewer | Worker `self_review` with `SELF` receipts |
 
-Current-task roles reuse the current task's actual model and reasoning level; they do not acquire the role default automatically. An isolated subagent must receive an explicit model override when the confirmed configuration differs from inheritance, and the spawn receipt must report acceptance.
+Current-task roles reuse the current task's actual model and reasoning level. The default inherited Reviewer uses the same configuration through parent inheritance; explicit alternative Reviewer configurations require their own enforcement receipt.
 
 Apply configuration provenance in this order:
 
@@ -159,13 +171,14 @@ GOAL, execution, review, and lane records include:
 | Reviewer session mode | `current_task`, `fork_worker_pre_execution`, `shared_planning_base`, `reuse_fixed`, `fresh`, or `isolated_subagent` |
 | Reviewer owner | `coordinator`, `worker`, or `external_task` |
 | Reviewer context mode | implementation-independent construction |
+| reviewer mode | `inherited_subagent` or `self_review` |
 | pre-execution boundary | time, message boundary, or handoff receipt |
 | execution dispatch time | must respect the selected independence construction |
 | requested model/reasoning | user-confirmed role configuration |
 | enforcement method/status | creation, handshake plus dispatch, current actual, or explicit subagent spawn; `planned / confirmed / enforced / mismatch` |
 | configuration receipt | accepted creation/message/spawn evidence, or exact mismatch |
 
-If lineage cannot establish independence, do not claim approval.
+If independent lineage cannot be established, do not claim independent approval. Use `self_review` only when it was explicitly selected and label its receipt accordingly.
 
 ## 8. Review handoff
 
@@ -179,4 +192,4 @@ At each review, provide:
 - untested scope and known risks;
 - the single review document the Reviewer may update.
 
-Do not copy the complete Worker implementation conversation. Let the Reviewer reconstruct judgment from frozen design, current code or artifacts, and evidence.
+The default Reviewer already has complete pre-implementation history; do not add the later Worker implementation conversation. Let it reconstruct judgment from frozen design, exact code or artifacts, and execution evidence. In `self_review`, record the same handoff fields in the Worker's concise receipt.

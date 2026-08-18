@@ -12,9 +12,9 @@
 
 {{WORKER_TABLE}}
 
-Default Worker model is `gpt-5.6-sol/high`; default Reviewer model is `gpt-5.6-sol/xhigh`. For every lane, record requested settings, enforcement method/status, acceptance receipt, and actual settings when observable.
+Default Worker model is `gpt-5.6-sol/high`; the default inherited Reviewer uses the same configuration. For every lane, record review mode, settings, enforcement method/status, acceptance receipt, and actual settings when observable.
 
-By default, fork each lane Worker from one pre-execution planning boundary, then fork its Reviewer before implementation starts. Record fixed or fresh overrides and task IDs in `coordination/lanes.md`.
+By default, fork each lane Worker from one planning boundary, let it read its task/code, then create its full-history inherited Reviewer before implementation. Record `self_review`, fixed, fresh, or blind-review overrides in `coordination/lanes.md`.
 
 ## 3. Launch-configuration confirmation
 

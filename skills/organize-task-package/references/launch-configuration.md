@@ -84,7 +84,8 @@ For every Worker/Reviewer show:
 - source context: the readable task title or Worker label from which it is reused, forked, or spawned;
 - current-task role: planning, Worker, Reviewer, or Orchestrator;
 - Worker mode: `current_task`, `reuse_fixed`, `fork_current`, or `fresh`;
-- Reviewer mode: `current_task`, `reuse_fixed`, `fork_worker_pre_execution`, `shared_planning_base`, `fresh`, or `isolated_subagent`;
+- `reviewer_mode`: `inherited_subagent` (default), another independent topology, or explicit `self_review`;
+- Reviewer session mode when present: `current_task`, `reuse_fixed`, `fork_worker_pre_execution`, `shared_planning_base`, `fresh`, or `isolated_subagent`;
 - for an isolated subagent, owner and context mode;
 - fork or reuse source;
 - requested model and reasoning;
@@ -105,7 +106,7 @@ Use these topology descriptions consistently:
 | `fork_worker_pre_execution` | create a separate Reviewer task from the named Worker before implementation |
 | `isolated_subagent` | create a new nested subagent owned by the named Worker or coordinator; state inherited-turn mode |
 
-For a nested Reviewer also report whether it is visible in the sidebar, who owns it, when it is spawned, whether it inherits no turns or a finite pre-execution slice, and how the same instance is resumed for re-review.
+For the default nested Reviewer also report that it is not visible in the sidebar, is owned by the Worker, is spawned after task/code reading but before implementation, inherits full pre-implementation history and Worker configuration, and is resumed for re-review. For `self_review`, state that no Reviewer context is created.
 
 For a `current_task` role, show its actual model and reasoning rather than the role default. If they are unsuitable, recommend another task or isolated subagent.
 
@@ -145,9 +146,9 @@ Prefer an isolated worktree per parallel code-writing Worker unless project poli
 | Execution mode | `single` |
 | Current session | Planning/coordinator, no active Goal, unless assigned Worker or Reviewer |
 | Worker | Reuse a valid fixed Worker for the same task family; otherwise create/fork one Worker |
-| Reviewer | Worker-managed pre-execution Reviewer subagent |
+| Reviewer mode | `inherited_subagent`; explicit `self_review` disables the separate Reviewer |
 | Worker model | `gpt-5.6-sol/high` |
-| Reviewer model | `gpt-5.6-sol/xhigh` |
+| Reviewer model | inherited from the selected Worker by default |
 | Review | Per work item plus part-level audit |
 | Token budget | unset |
 | Push | false |
@@ -155,7 +156,7 @@ Prefer an isolated worktree per parallel code-writing Worker unless project poli
 
 When the same task family consistently uses a fixed Worker, recommend it as `reuse_fixed` instead of creating a duplicate. Prefer a fresh pre-execution Reviewer subagent owned by that Worker over reusing a Reviewer that may carry prior implementation context.
 
-For the default single-Worker execution, require the Worker to create its Reviewer subagent before the active Goal, implementation reasoning, or product writes. The subagent inherits only the frozen pre-execution context and later receives exact snapshots and evidence. A current-task Reviewer or separate Reviewer task remains available when explicitly selected. Do not reduce independence merely to save a task.
+For default single-Worker execution, require the Worker to finish task/code reading and then create its Reviewer with full current history before the active Goal, implementation reasoning, or product writes. A current-task Reviewer, separate Reviewer task, blind Reviewer, or explicit `self_review` remains available when selected.
 
 ## 6. Fixed-session validity checks
 
@@ -180,11 +181,12 @@ Use the topology-specific procedure below after launch configuration is confirme
 | `fresh` | Create the task with the confirmed `model` and `thinking` values in the creation request. The initial task prompt may be the formal dispatch. | Created task ID plus accepted creation settings |
 | `fork_current`, `fork_worker_pre_execution`, `shared_planning_base` | Fork only to establish lineage. Then send a short configuration-only liveness message using the confirmed `model` and `thinking`, wait for `READY`, and send the formal dispatch with the same explicit settings. | Fork ID, handshake message/response, and formal-dispatch acceptance |
 | `reuse_fixed` | Verify the task is idle and compatible, then use the same configuration-only liveness handshake and explicit formal dispatch as a fork. | Reused task ID, handshake message/response, and formal-dispatch acceptance |
-| `isolated_subagent` | By default, the Worker spawns it before implementation with explicit `model` and `reasoning_effort` plus the smallest finite inherited-turn count that includes the frozen design and formal dispatch. Require `READY_REVIEW` before the Worker creates its active Goal or writes product state. Use `fork_turns="none"` only for an explicitly selected blind/no-history review. | Readable Reviewer label, internal subagent ID, requested settings, inherited boundary, `READY_REVIEW`, and spawn acceptance |
+| `isolated_subagent` | By default, the Worker spawns it after task/code reading and before implementation with full history and no explicit model/reasoning override. Require `READY_REVIEW` before active Goal creation or product writes. Use `fork_turns="none"` only for an explicitly selected blind/no-history review. | Readable Reviewer label, internal subagent ID, inherited Worker settings, full-history pre-execution boundary, `READY_REVIEW`, and spawn acceptance |
+| `self_review` | Create no Reviewer context. Record explicit user selection and `SELF_REVIEW_READY`; after implementation require an exact `SELF` receipt. | User confirmation, readiness receipt, and per-item SELF receipt |
 
 The configuration-only liveness message must not start task work or create an active Goal. Use a short payload such as: `Configuration preflight only; do not start the task or create a Goal. Reply READY_CONFIG.` The receipt is the task tool's acceptance of the explicit settings plus the target's liveness response; do not rely on the model to identify its own runtime configuration. For a fork or reused task, send the formal dispatch with the same explicit settings even after the handshake; this avoids relying only on persistence from a prior turn. Later follow-ups may omit settings only after the enforcement receipt is durable and no UI or API override has intervened.
 
-Task-level configuration and nested subagent configuration are separate. Configuring a Worker task does not guarantee the model used by subagents it later creates. For native Codex subagents, record the applicable custom-agent file, explicit spawn override, `[agents]` default, or parent inheritance. Explicit spawn settings take precedence over defaults; a full-history spawn cannot enforce a different Reviewer model and must not be used for the default Worker-high / Reviewer-xhigh pair. Use a finite inherited slice for that pair.
+Task-level and nested-subagent configuration remain separate. For the default full-history Reviewer, parent inheritance deliberately supplies the same Worker model/reasoning; record that mechanism. If a different Reviewer configuration is requested, use an explicit supported construction and record its separate enforcement receipt.
 
 Fail closed when the requested pair is unsupported or the tool cannot enforce it: keep execution unauthorized, record `mismatch`, and ask for a replacement model, reasoning level, or topology. Never silently run a fallback and label it with the requested configuration.
 
@@ -202,10 +204,10 @@ The task package is ready. Recommended launch configuration:
   - Type: reuse existing sidebar task (`reuse_fixed`); no fork and no new task
   - Source: most recent confirmed same-family configuration
   - Enforcement: configuration-only liveness handshake, then explicit formal dispatch
-- Reviewer: "Mode 1 Direct Repair / Pre-execution Reviewer", Worker-managed subagent, gpt-5.6-sol/xhigh
+- Reviewer: "Mode 1 Direct Repair / Pre-execution Reviewer", Worker-managed inherited subagent, same model/reasoning as Worker
   - Type: new nested subagent (`isolated_subagent`), owned by "Mode 1 Direct Repair"; not a sidebar task
-  - Source: finite inherited pre-execution context from "Mode 1 Direct Repair"
-  - Creation: finite inherited design/dispatch context before active Goal or product work; require `READY_REVIEW`
+  - Source: full Worker history after task/code reading and before implementation
+  - Creation: full-history spawn with inherited settings before active Goal or product work; require `READY_REVIEW`
 - GOAL: <absolute path>
 - Workspace: <branch/worktree>, baseline <sha>
 - Review: each work item plus a part-level audit

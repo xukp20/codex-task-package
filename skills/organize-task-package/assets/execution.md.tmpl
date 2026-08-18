@@ -12,8 +12,8 @@
 - Session mode: `current_task / fork_current / reuse_fixed / fresh`.
 - Human-readable Worker label: resolve from sidebar title or derive.
 - Internal task ID / fork source / pre-execution fork point: To fill in the technical receipt.
-- Paired Reviewer label: `<Worker label> / Pre-execution Reviewer` by default.
-- Reviewer internal subagent ID / owner / isolation mode / `READY_REVIEW` receipt: To fill before active Goal or implementation.
+- Review mode: `inherited_subagent` by default; explicit alternative `self_review`.
+- Reviewer label: `<Worker label> / Pre-execution Reviewer`; inherited full-history boundary, internal ID, owner, and `READY_REVIEW`, or `SELF_REVIEW_READY`: To fill before active Goal or implementation.
 - Launch-configuration receipt / actual deviation: To fill; execution may not start before confirmation and model enforcement.
 
 ## 2. Launch baseline
@@ -44,7 +44,7 @@
 - Commit / artifact / checkpoint: To fill.
 - Residual risk: To fill.
 - Self-review verdict: `pending / ready_for_review`.
-- Review request: To fill exact snapshot and notification time.
+- Review invocation: To fill exact snapshot, mode, receipt target, and notification time.
 
 > Append later work items or repair attempts in the same format. Never overwrite historical failure evidence.
 

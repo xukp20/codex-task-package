@@ -12,7 +12,7 @@
     <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-172554?style=flat-square">
   </a>
   <img alt="Task state" src="https://img.shields.io/badge/GOAL-3--state-0f8f88?style=flat-square">
-  <img alt="Independent review" src="https://img.shields.io/badge/review-independent-6b4fbb?style=flat-square">
+  <img alt="Review modes" src="https://img.shields.io/badge/review-configurable-6b4fbb?style=flat-square">
   <img alt="Status" src="https://img.shields.io/badge/status-active-d97706?style=flat-square">
 </p>
 
@@ -28,10 +28,10 @@
 
 Codex Task Package provides the `organize-task-package` skill: a reusable
 workflow for turning a long or evolving discussion into an executable,
-resumable, and independently reviewable task package.
+resumable, and reviewable task package.
 
 It is designed for work where a checklist is not enough. The skill keeps user
-decisions, implementation plans, execution facts, Reviewer findings, and
+decisions, implementation plans, execution facts, review findings, and
 aggregate status separate so that each claim can be traced to evidence.
 
 <table>
@@ -44,12 +44,12 @@ aggregate status separate so that each claim can be traced to evidence.
     <td width="33%" valign="top">
       <strong>Execute Deliberately</strong><br><br>
       Split work into verifiable items, freeze validation, select Worker and
-      Reviewer topology, and record exact execution receipts.
+      review mode, and record exact execution receipts.
     </td>
     <td width="33%" valign="top">
       <strong>Review Independently</strong><br><br>
-      Bind findings and approvals to exact snapshots without allowing the
-      implementation context to approve its own work.
+      Bind findings and approvals to exact snapshots. Use the default inherited
+      Reviewer, or explicitly select lightweight self-review.
     </td>
   </tr>
 </table>
@@ -98,9 +98,11 @@ User discussion and repository facts
           pending → implemented_pending_review → approved
 ```
 
-The default single-Worker workflow creates the independent Reviewer before the
-Worker begins implementation reasoning. The same Reviewer is reused for exact
-snapshot review and re-review. Parallel execution adds explicit lanes,
+The default single-Worker workflow lets the Worker read the task and code, then
+creates a full-history Reviewer before implementation reasoning. The Reviewer
+inherits the Worker's model configuration and is reused for exact-snapshot
+review. An explicit self-review mode skips the subagent while retaining labeled
+receipts. Parallel execution adds explicit lanes,
 worktrees, dependency gates, merge order, and integration receipts.
 
 ## Core Contract
@@ -111,7 +113,7 @@ worktrees, dependency gates, merge order, and integration receipts.
 | **Design parts** | Define bounded work items, implementation impact, validation assets, exact commands, and acceptance criteria |
 | **GOAL** | Aggregate task state and launch configuration without duplicating detailed evidence |
 | **Execution record** | Store actual paths, deviations, commands, results, durations, commits, failures, and residual risks |
-| **Review record** | Store independent findings and exact-snapshot verdicts, including re-review history |
+| **Review record** | Store inherited Reviewer findings or labeled self-review receipts and exact-snapshot verdicts |
 | **Coordination** | Define Worker ownership, write lanes, worktrees, dependencies, notifications, merge order, and cleanup |
 
 Each work item has exactly one state:
@@ -119,8 +121,8 @@ Each work item has exactly one state:
 | State | Meaning |
 | --- | --- |
 | `pending` | Implementation or execution is incomplete |
-| `implemented_pending_review` | Worker evidence exists, but an independent Reviewer has not approved it |
-| `approved` | An exact review receipt approves the exact implementation or artifact snapshot |
+| `implemented_pending_review` | Worker evidence exists, but the configured review mode has not approved it |
+| `approved` | An exact REVIEW or SELF receipt approves the exact implementation or artifact snapshot |
 
 ## Supported Task Profiles
 
@@ -259,7 +261,7 @@ provider credentials, repository-specific paths, and execution artifacts.
 - The skill never treats the existence of `GOAL.md` as execution authority.
 - Material schema, API, authorization, destructive-operation, and migration
   decisions remain explicit user gates.
-- A context may implement or approve a snapshot, but not both.
+- Independent mode never lets one context implement and approve a snapshot; explicit self-review receipts are labeled non-independent.
 - Real providers, deployments, migrations, releases, pushes, and other
   external actions remain subject to the user's requested scope.
 

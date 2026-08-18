@@ -1,18 +1,19 @@
-# {{TASK_TITLE}}: Independent Reviewer Record ({{REVIEWER_ID}})
+# {{TASK_TITLE}}: Review Record ({{REVIEWER_ID}})
 
 ## 1. Reviewer boundaries
 
 - Reviewer label: `{{REVIEWER_ID}}`; default `<Worker label> / Pre-execution Reviewer`
-- Requested model/reasoning: `gpt-5.6-sol/xhigh`
+- Review mode: `inherited_subagent` / `self_review`.
+- Requested model/reasoning: inherited from Worker by default; not applicable for `self_review`.
 - Enforcement method/status: creation, handshake plus explicit dispatch, current actual, or explicit isolated-subagent spawn; `planned / confirmed / enforced / mismatch`.
 - Configuration receipt and actual model/reasoning when observable: To fill.
 - Paired Worker: `{{WORKER_ID}}`
 - Writable scope: this file only.
 - Product code or artifacts: read-only; do not repair on behalf of the Worker.
 - Session mode: `current_task / fork_worker_pre_execution / shared_planning_base / reuse_fixed / fresh / isolated_subagent`.
-- Internal task or subagent ID / owner / finite inherited source / pre-execution boundary: To fill in the technical receipt.
-- Pre-execution readiness receipt: `READY_REVIEW` / To fill.
-- Independence confirmation: this Reviewer neither implemented the snapshot nor inherited its implementation reasoning.
+- Internal task or subagent ID / owner / full-history pre-execution source: To fill, or `none` for `self_review`.
+- Pre-execution readiness receipt: `READY_REVIEW / SELF_REVIEW_READY` / To fill.
+- Independence confirmation: required for Reviewer modes; for `self_review`, state explicitly that the receipt is not independent.
 
 ## 2. Review iteration 1
 
