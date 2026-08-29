@@ -184,6 +184,20 @@ Codex may also select the skill automatically when a request clearly requires
 durable task documentation, Worker/Reviewer coordination, execution receipts,
 parallel worktrees, or completion auditing.
 
+### Optional task-channel fallback
+
+Codex's built-in task tools remain the default for creating, forking, reading,
+waiting on, and messaging Worker or Reviewer tasks. If a Codex build advertises
+a task tool but explicitly reports that its dynamic handler is unavailable,
+install the companion
+[`codex-app-task-channel`](https://github.com/xukp20/codex-app-task-channel)
+skill. It connects to the desktop app's owned App Server and preserves the
+distinction between same-turn `steer`, idle `start`, state-aware `followup`, and
+durable next-turn `queue` delivery.
+
+Do not switch preemptively: first try the built-in tool, and after a failed
+mutation verify task state before fallback to avoid duplicate tasks or messages.
+
 ## Generated Package Shape
 
 A single-Worker package normally looks like this:

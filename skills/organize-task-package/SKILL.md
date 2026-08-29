@@ -201,6 +201,14 @@ Read [parallel-orchestration.md](references/parallel-orchestration.md) for the f
 - Default to selecting or creating the Worker only after execution is authorized; then have that Worker create its Reviewer subagent at the frozen pre-execution boundary. Create separate fresh Reviewer tasks only when the confirmed topology selects them.
 - Reuse a user-designated fixed Worker/Reviewer instead of creating duplicate equivalent sessions.
 
+Use built-in Codex task tools for task creation, fork, read, wait, and messaging.
+If a needed built-in tool is absent or explicitly reports that its handler is
+unavailable, use `$codex-app-task-channel` as an optional installed fallback.
+Record whether delivery used `steer`, `start`, `followup`, or `queue`; queue is
+durable next-turn delivery and must not be reported as same-turn steer. After a
+failed built-in mutation, verify task state before fallback so an uncertain
+outcome does not create a duplicate task or message.
+
 ## Completion conditions
 
 Claim completion only when all conditions hold:
