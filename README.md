@@ -49,7 +49,8 @@ aggregate status separate so that each claim can be traced to evidence.
     <td width="33%" valign="top">
       <strong>Review Independently</strong><br><br>
       Bind findings and approvals to exact snapshots. Use the default inherited
-      Reviewer, or explicitly select lightweight self-review.
+      Reviewer, or explicitly select lightweight self-review. Keep findings
+      proportional to owned business risk and realistic reachability.
     </td>
   </tr>
 </table>
@@ -64,6 +65,7 @@ execution, and verification:
 - test lists are chosen after the code instead of from the risk model;
 - Worker completion is confused with independent approval;
 - review findings live only in chat and disappear from the durable record;
+- speculative defense-in-depth review can crowd out real business correctness;
 - multi-Worker tasks lack explicit ownership, merge order, and cleanup rules;
 - README, GOAL, implementation, and repository state drift apart over time.
 

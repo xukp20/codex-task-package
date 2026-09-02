@@ -14,6 +14,7 @@
 - Internal task or subagent ID / owner / full-history pre-execution source: To fill, or `none` for `self_review`.
 - Pre-execution readiness receipt: `READY_REVIEW / SELF_REVIEW_READY` / To fill.
 - Independence confirmation: required for Reviewer modes; for `self_review`, state explicitly that the receipt is not independent.
+- Materiality policy: business-risk proportional; speculative long-tail hardening is non-blocking unless an explicit contract, realistic input path, threat model, or observed failure makes it relevant.
 
 ## 2. Review iteration 1
 
@@ -33,11 +34,13 @@
 
 ### 2.2 Findings
 
-| ID | Severity | Title | Evidence | Impact | Recommended repair | Recommended validation | State |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| RV-001 | P0/P1/P2/P3 | To fill | To fill | To fill | To fill | To fill | open/closed |
+| ID | Severity | Disposition | Title | Owned contract and reachability | Evidence | Impact | Recommended repair/validation | State |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| RV-001 | P0/P1/P2/P3 | blocking/follow_up/out_of_scope | To fill | To fill | To fill | To fill | To fill | open/closed |
 
 If no finding exists, remove the placeholder row and state explicitly that there are no P0/P1/P2/P3 findings.
+
+Consolidate speculative or extreme defense-in-depth observations into one residual note. They do not force `rework_required` unless the task explicitly owns that boundary.
 
 ### 2.3 Per-item verdict
 

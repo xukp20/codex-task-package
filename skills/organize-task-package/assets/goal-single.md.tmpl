@@ -79,7 +79,8 @@ Allowed states: `pending`, `implemented_pending_review`, and `approved`.
 3. Complete items one by one and update `execution/worker-main.md`.
 4. After implementation self-check, mark the item `implemented_pending_review` and invoke the configured review mode.
 5. Mark `approved` only after an exact `REVIEW` or `SELF` approval receipt.
-6. After all items pass, complete each part audit and final consistency checks.
+6. Reviewer findings follow the risk-proportional gate: supported business paths and high-consequence invariants may block; speculative long-tail hardening is recorded as non-blocking residual work.
+7. After all items pass, complete each part audit and final consistency checks.
 
 ## 7. Completion conditions
 

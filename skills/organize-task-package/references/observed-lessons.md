@@ -48,4 +48,10 @@ Rule: Workers write their own GOAL/execution files, Reviewers write their own re
 
 Reviewers have found stale state, transaction-order bugs, races, fixtures that miss target branches, and Agent-surface inconsistencies that more Worker self-testing did not naturally reveal.
 
-Rule: inspect real code or artifacts and negative cases. Use an independent context and normally a higher reasoning level.
+Rule: inspect real code or artifacts and realistic negative cases. Use an independent context and the configured reasoning level.
+
+## 9. Defensive review can crowd out business correctness
+
+Some reviews spent multiple iterations on extreme malformed inputs or resource-exhaustion shapes that were outside the supported contract, while the important business state machine received less attention.
+
+Rule: prioritize confirmed business paths, real consumer contracts, and high-consequence persistence, authority, recovery, and security invariants. Require plausible reachability and evidence for blocking `P2` findings. Consolidate speculative long-tail hardening as non-blocking residual work instead of expanding the current task.

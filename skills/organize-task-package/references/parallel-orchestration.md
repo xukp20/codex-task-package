@@ -37,6 +37,17 @@ By default, fork every Worker from one frozen planning boundary. After each Work
 
 The Orchestrator normally has no active Goal and does not occupy an execution loop merely to wait. Respond to task messages or state receipts.
 
+For multi-slice programs, the Orchestrator normally does not write slice product code. Delegate the current slice to one bounded Worker, keep shared public assembly and integration with the Orchestrator, and overlap only these independent activities:
+
+- current-slice implementation;
+- read-only planning of the next slice after its provider contract is frozen;
+- implementation-independent Reviewer readiness;
+- parallel comprehensive and focused review of one frozen candidate when the risk profile justifies both.
+
+Do not split a single transaction, persistence authority, schema mutation, state machine, or tightly coupled test-first contract across multiple Workers. This creates merge and review overhead rather than useful concurrency. A second product Writer requires exact disjoint write scopes and dependency-free behavior.
+
+When the Orchestrator owns Reviewer creation instead of the Worker, create the Worker and Reviewer contexts from the same frozen pre-implementation planning boundary. Reviewers receive design, baseline, validation scope, and later the exact candidate, but never the Worker's implementation reasoning. Record the alternative lineage explicitly.
+
 ## 3. Lane definition
 
 Each lane declares:

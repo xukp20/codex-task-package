@@ -81,7 +81,21 @@ Append a record for every iteration containing:
 - part-level integrated-audit verdict;
 - uninspected scope and residual risk.
 
-An inherited Reviewer is read-only for product files and writes only its review record. In `self_review`, the Worker writes a concise record covering exact snapshot, design/document coverage, validation, findings, residual risk, and `SELF` verdict.
+### 5.1 Finding materiality and disposition
+
+Severity is not assigned from theoretical possibility alone. Evaluate each finding by owned business impact, plausible reachability, evidence strength, and whether the task or public contract promises the behavior.
+
+Classify every observation as one of:
+
+- `blocking`: violates a confirmed business path or acceptance criterion, a real consumer-facing contract, or a high-consequence persistence/authorization/identity/concurrency/recovery/security invariant;
+- `follow_up`: useful defense-in-depth or maintainability improvement that does not prevent the supported task from working correctly;
+- `out_of_scope`: speculative, impossible under current invariants, owned by another layer, or outside documented input limits.
+
+`P0/P1` are normally blocking when evidenced. `P2` blocks only with realistic reachability, an explicit contract, or high-consequence impact. Long-tail `P2` cases such as thousand-level JSON nesting, extreme payload sizes, or raw lower-level parser failures are non-blocking unless the application explicitly owns and supports that boundary. `P3` never blocks unless the task explicitly promotes it to acceptance scope.
+
+Do not require bespoke wrappers, schema expansion, or broad negative matrices for non-blocking observations. Consolidate them into one residual section. The first review should return all blocking findings it can identify; focused re-review must not reopen unrelated speculative hardening.
+
+An inherited Reviewer is read-only for product files and writes only its review record. In `self_review`, the Worker writes a concise record covering exact snapshot, design/document coverage, validation, findings, residual risk, and `SELF` verdict. Approval requires no open `blocking` finding; unresolved `follow_up` or `out_of_scope` observations remain visible but do not force rework.
 
 ## 6. State transitions
 

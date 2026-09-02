@@ -13,6 +13,8 @@ Include:
 - positive, negative, and regression validation;
 - direct comparison with the original failure evidence.
 
+Keep negative cases within the supported call path, documented input boundary, observed failure family, or material security/recovery risk. Do not turn unrelated parser or resource-exhaustion hardening into the repair.
+
 Avoid vague items such as “fix code and run tests.”
 
 ## 2. Feature or refactor
@@ -25,6 +27,8 @@ Include:
 - closed implementation slices;
 - behavior-preservation and new-capability validation;
 - stale-symbol and stale-entry-point audit.
+
+Review architectural and business invariants before defensive edge cases. Extreme malformed inputs outside the public contract are optional follow-up unless the feature explicitly owns them.
 
 ## 3. Test construction
 

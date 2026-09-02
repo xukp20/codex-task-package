@@ -85,6 +85,8 @@ Each work item answers:
 
 Freeze the validation design before execution. If implementation reveals a missing impact path, update the design and matrix before running the additional validation.
 
+Negative coverage follows the owned contract and realistic risk model. Do not invent validation obligations for extreme recursion, oversized payloads, impossible internal states, or lower-level library failures unless they are explicitly supported, realistically reachable, security-relevant, or observed. Record optional defense-in-depth separately instead of expanding the task's acceptance boundary.
+
 ## 5. Part boundaries
 
 A sound part:
@@ -95,4 +97,4 @@ A sound part:
 - fits one Reviewer context;
 - is not divided only by folders or desired commit count.
 
-End every part with an integrated audit of the call chain, persistence, authorization and Agent surface, negative cases, documentation, stale symbols and entry points, and rollback or cleanup.
+End every part with an integrated audit of the call chain, persistence, authorization and Agent surface, realistic negative cases, documentation, stale symbols and entry points, and rollback or cleanup.

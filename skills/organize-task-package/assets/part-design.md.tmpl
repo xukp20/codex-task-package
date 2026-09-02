@@ -47,6 +47,8 @@ To fill.
 | --- | --- | --- | --- | --- |
 | To fill | To fill | To fill | focused/integration/real/manual | To fill |
 
+Keep negative coverage proportional to supported business behavior and realistic risk. Do not add tests solely for extreme recursion, payload size, impossible internal states, or lower-level library failures outside the owned contract.
+
 ### 3.6 Acceptance criteria
 
 - [ ] Minimal failure or baseline evidence is established.
@@ -69,7 +71,7 @@ After every item is complete, the Reviewer checks:
 - closed end-to-end call chain or execution path;
 - consistent persistence, identity, authorization, and Agent/API surfaces;
 - failure, concurrency, retry, rollback, and cleanup boundaries;
-- positive and negative validation reaches the target paths;
+- positive and realistic negative validation reaches the target paths;
 - no stale symbols, entry points, duplicate truth, or documentation drift;
 - compatibility with upstream and downstream contracts.
 

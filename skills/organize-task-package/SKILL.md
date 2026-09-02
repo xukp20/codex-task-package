@@ -110,6 +110,8 @@ Split by capability, defect, investigation question, or operational stage rather
 
 End each part with an integrated audit across its work items: combined behavior, adjacent risks, documentation, and stale symbol or entry-point residue. Read [task-profiles.md](references/task-profiles.md) for task-type adaptations.
 
+Validation and review scope must be proportional to owned business risk. Do not add work items or tests solely for theoretically possible malformed inputs, extreme recursion or payload sizes outside the supported contract, impossible internal states, or failures owned by a lower-level library. Such cases become blocking only when an explicit acceptance criterion, realistic public input path, threat model, or observed failure makes them relevant.
+
 ## Stage 5: Maintain three-state GOAL truth
 
 Each work item has exactly one state:
@@ -164,6 +166,18 @@ Choose the least expensive topology that preserves the confirmed auditability. I
 
 Default single-Worker topology: after launch confirmation, the selected Worker reads the frozen package, project rules, current code, HEAD, and validation boundary. Before implementation reasoning, active Goal creation, or product writes, it creates a Reviewer subagent with full current history and no model/reasoning override, so the Reviewer inherits the Worker's configuration and pre-implementation understanding. Wait for `READY_REVIEW`, then implement and reuse the same Reviewer for exact-snapshot review and re-review. With explicit `self_review`, do not create a subagent; the Worker performs the concise receipt-based check itself.
 
+### Risk-proportional review gate
+
+Reviewers prioritize, in order: confirmed business behavior; durable state and recovery truth; authorization, identity, concurrency, confidentiality, and destructive boundaries; public contracts used by real consumers; then realistic negative inputs. Findings must state the violated owned contract, plausible reachability, evidence, and material impact.
+
+- `P0` and `P1` findings are blocking when supported by evidence.
+- `P2` is blocking only when it affects a supported or realistically reachable path, an explicit acceptance criterion, or a high-consequence invariant. Speculative or extreme long-tail `P2` observations are follow-up, not release gates.
+- `P3` and optional defense-in-depth never block approval unless the task explicitly makes them acceptance criteria.
+
+Do not require application code to wrap every lower-level parser, recursion, memory, or malformed-data failure. For example, thousand-level JSON nesting is non-blocking unless that shape is within documented limits, crosses a realistic untrusted boundary that the application owns, or has observed failure evidence. Prefer existing library limits and bounded public-input validation over speculative wrappers.
+
+The initial review returns all material blocking findings together. Re-review covers accepted repairs and their immediate impact. Non-blocking observations are consolidated once as residual risk; they do not trigger repeated review turns, new abstractions, or expanded test matrices.
+
 Execution loop:
 
 1. The Worker rereads the task package, project rules, coordination state, current code, current HEAD, working tree, and validation boundary.
@@ -171,7 +185,7 @@ Execution loop:
 3. Only after the selected review-mode readiness receipt does the Worker create an active Goal referencing the assigned `GOAL.md` and begin implementation.
 4. The Worker completes one item, self-checks it, and appends actual paths, deviations, commands, results, durations, commits, and residual risks to the execution record.
 5. The Worker marks the item `implemented_pending_review` and invokes the selected review mode on the exact snapshot.
-6. The inherited Reviewer writes an independent verdict, or the Worker writes a concise `SELF` receipt covering scope, validation, task-document goals, and residual risk.
+6. The inherited Reviewer writes an independent verdict, or the Worker writes a concise `SELF` receipt covering scope, validation, task-document goals, and residual risk. The verdict separates blocking findings from non-blocking follow-up under the risk-proportional gate.
 7. The Worker fixes findings and repeats the selected check. After an exact approval receipt, the Worker marks the item `approved`.
 8. After all items in a part are approved, run the part-level integrated audit.
 9. After all parts pass, complete final validation, commit-scope inspection, document reconciliation, and cleanup.
@@ -181,6 +195,10 @@ Read [execution-and-review.md](references/execution-and-review.md) for exact res
 ## Stage 7: Coordinate parallel execution
 
 Recommend parallelism when current task boundaries or validated same-family history support it, but enable it only after user confirmation. Without a confirmed parallel configuration, remain single-Worker. In parallel mode, the current session becomes an event-driven Orchestrator, normally without an active Goal or continuous polling.
+
+For a long-lived multi-slice program, prefer a manager/worker pipeline when subagent capacity is available: the parent task acts as Orchestrator/Integrator and delegates each concrete implementation slice to a bounded Worker subagent or task. The Orchestrator should not also be the routine product Writer; it owns planning decisions, lane assignment, shared integration, progress truth, and user-facing gates. Keep one product Writer per shared transaction, schema, state machine, or tightly coupled file set. Add a second Writer only for proven disjoint ownership, not merely because a slot is free.
+
+Pipeline roles instead of serializing all activity: pre-create implementation-independent Reviewers at the frozen pre-execution boundary; let a read-only Planner prepare at most the next slice while the current Worker implements; run non-overlapping Reviewer passes concurrently only after the candidate is frozen; and let the Orchestrator integrate approved output while the next bounded Worker is being prepared. Idle Reviewer capacity is not a reason to invent more findings or wider validation.
 
 Add `goals/` and `coordination/` to parallel packages:
 
