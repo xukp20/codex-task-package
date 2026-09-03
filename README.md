@@ -55,6 +55,8 @@ resume information we actually need.
 
 The skill does not create an active Goal or authorize implementation merely because documentation exists.
 
+The Skill is explicit opt-in. Invoke it by name, or approve its use after Codex suggests it; task size alone does not activate it. Once active for software architecture or development, it evaluates whether `right-sized-engineering` would help and, when relevant, asks for separate approval before loading that companion.
+
 ## Initializer
 
 Create the default compact package:

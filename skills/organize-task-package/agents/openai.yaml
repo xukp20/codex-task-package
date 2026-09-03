@@ -2,3 +2,5 @@ interface:
   display_name: "Organize Task Package"
   short_description: "Create the smallest useful, resumable task package"
   default_prompt: "Use $organize-task-package to preserve this task's accepted decisions, work items, validation, and only the durable execution or coordination records it actually needs."
+policy:
+  allow_implicit_invocation: false

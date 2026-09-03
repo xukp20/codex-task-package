@@ -1,11 +1,15 @@
 ---
 name: organize-task-package
-description: Turn a substantial discussed task into the smallest useful, resumable documentation package. Use when work needs durable decisions, implementation items, validation plans, handoff state, review, or multi-worker coordination. Do not use for a short task whose plan and result fit naturally in the current conversation.
+description: "Turn a substantial discussed task into the smallest useful, resumable documentation package. Explicit opt-in only: use when the user invokes $organize-task-package, or after Codex proposes it and the user approves; never auto-invoke merely because a task is large or multi-step."
 ---
 
 # Organize Task Packages
 
 Create only the records that have a real reader or recovery purpose. A task package should reduce ambiguity and handoff cost, not become a second project to maintain.
+
+## Invocation boundary
+
+This skill is opt-in. Use it only when the user explicitly invokes it, or after Codex briefly proposes it and the user explicitly agrees. Suggest it only when durable records have a concrete recovery, handoff, or coordination reader; do not interrupt routine multi-step work to ask. Task size alone is not permission to create a package. Companion skills may be considered automatically, but each still requires user approval before use.
 
 ## Language and local policy
 
@@ -13,7 +17,7 @@ Keep this skill and its bundled resources in English. Write generated documents 
 
 Follow the target repository's documentation, coordination, Git, and safety rules. They override this skill's defaults.
 
-When `$right-sized-engineering` is available, use it to decide which artifacts, validation, compatibility mechanisms, and review gates are justified.
+For software development or architecture packages, actively consider whether the task has material tradeoffs in validation, compatibility, persistence, state, concurrency, public interfaces, or abstraction depth. If so, briefly ask the user whether to add `$right-sized-engineering`. Load and apply it only after approval. If it is not relevant, continue packaging independently without asking. When both skills are active, use `right-sized-engineering` to decide which artifacts, safeguards, validation, compatibility mechanisms, and review gates are justified.
 
 ## Route the request
 
