@@ -1,115 +1,34 @@
-# Parallel Worker Orchestration
+# Parallel Orchestration
 
-## Contents
+Use parallel writers only when independent ownership reduces elapsed time more than it increases integration cost.
 
-- Enablement and Orchestrator role
-- Lanes and worktrees
-- Worker/Reviewer pairing
-- Integration and cleanup
+## Good parallel boundaries
 
-## 1. Enablement
+- independent modules with stable interfaces;
+- separate provider adapters after their shared contract is frozen;
+- read-only planning or review alongside implementation;
+- tests or experiments that do not mutate shared state.
 
-Parallel execution is off by default. Enable it only after user confirmation and only when the task has clear write lanes.
+Avoid parallel writes to one schema, transaction, registry, state machine, generated surface, lockfile, or unresolved public interface.
 
-Do not parallelize these areas merely for speed:
+## Minimum coordination record
 
-- one persistence model and its migration;
-- one registry, shared configuration, lockfile, or generated surface;
-- one transaction, finalizer, or Release path;
-- a shared design that remains open;
-- a consumer that requires an unfinished provider API.
+For each writer or lane, record only:
 
-Run them serially or finish the provider first.
+- outcome and owner;
+- write scope and no-touch hotspots;
+- upstream dependencies;
+- branch or worktree when used;
+- completion or integration condition.
 
-## 2. Orchestrator responsibilities
+Record integration order and one integration owner. Do not require separate lane GOAL, execution, and review files when the shared record is sufficient.
 
-The current task acts as Orchestrator and:
+## Worktrees
 
-- freezes parts, dependency graph, Worker/Reviewer pairing, and write scope;
-- prepares worktrees/branches or shared-tree ownership;
-- dispatches each Worker GOAL;
-- receives blocker, pause, completion, and integration receipts;
-- maintains root GOAL and coordination records;
-- integrates reviewed outputs and runs integration validation;
-- closes worktrees and branches.
+Use isolated worktrees when writers touch the same repository concurrently, need independent commits, or the current checkout is dirty. A shared tree is acceptable for clearly disjoint writes under one integrator.
 
-By default, fork every Worker from one frozen planning boundary. After each Worker reads its package, code, and validation boundary, it creates a full-history inherited Reviewer before implementation. Fixed, fresh, or `self_review` modes are explicit overrides; see [session-topology.md](session-topology.md).
+Never delete a dirty, unmerged, running, or user-preserved worktree. Clean temporary branches and worktrees after integration when the user has not requested preservation.
 
-The Orchestrator normally has no active Goal and does not occupy an execution loop merely to wait. Respond to task messages or state receipts.
+## Review and communication
 
-For multi-slice programs, the Orchestrator normally does not write slice product code. Delegate the current slice to one bounded Worker, keep shared public assembly and integration with the Orchestrator, and overlap only these independent activities:
-
-- current-slice implementation;
-- read-only planning of the next slice after its provider contract is frozen;
-- implementation-independent Reviewer readiness;
-- parallel comprehensive and focused review of one frozen candidate when the risk profile justifies both.
-
-Do not split a single transaction, persistence authority, schema mutation, state machine, or tightly coupled test-first contract across multiple Workers. This creates merge and review overhead rather than useful concurrency. A second product Writer requires exact disjoint write scopes and dependency-free behavior.
-
-When the Orchestrator owns Reviewer creation instead of the Worker, create the Worker and Reviewer contexts from the same frozen pre-implementation planning boundary. Reviewers receive design, baseline, validation scope, and later the exact candidate, but never the Worker's implementation reasoning. Record the alternative lineage explicitly.
-
-## 3. Lane definition
-
-Each lane declares:
-
-- Worker, Reviewer, requested models/reasoning, enforcement methods/status, and receipts;
-- assigned work items;
-- impact scope and exact write scope;
-- shared hotspots and no-touch scope;
-- provider/consumer dependencies;
-- branch, worktree, and baseline;
-- validation and delivery commit;
-- pause gates, notification targets, and completion conditions;
-- task IDs, session modes, fork sources, and pre-execution fork point.
-
-No lane starts from a merely planned or confirmed model. Each Worker and Reviewer context must first have an `enforced` creation, handshake-plus-dispatch, current-task, or explicit-subagent receipt. Nested subagents need separate receipts; the lane task's configuration does not configure them implicitly.
-
-Allow only one writer for a file or business object in one coordination window. Do not review a range while its Worker is still changing it.
-
-## 4. Worktree choice
-
-Prefer isolated worktrees when:
-
-- multiple Workers write code;
-- lanes need independent baselines or commits;
-- the shared checkout contains other active changes;
-- review needs exact branch state;
-- merge order is part of the task.
-
-A shared tree is acceptable only when project rules require it, write scopes are fully disjoint, shared files are frozen, and one integrator owns commits.
-
-## 5. One-to-one review
-
-By default, pair each parallel Worker with an inherited pre-execution Reviewer. Explicit `self_review` lanes create no separate Reviewer and must label their receipts accordingly. One independent Reviewer may sequentially inspect unrelated lanes but may not review a range it implemented or integrated.
-
-Each lane uses:
-
-- `goals/<worker>.md`;
-- `execution/<worker>.md`;
-- `review/<reviewer>.md`.
-
-Workers write only their lane records. The Orchestrator alone writes root GOAL and `coordination/**`.
-
-## 6. Integration
-
-A lane is ready only when:
-
-- every work item is `approved`;
-- the exact commit is recorded;
-- its worktree is clean;
-- no blocking finding remains;
-- upstream dependency versions are explicit.
-
-Integrate in dependency order. Conflict resolution is integration work owned by one integrator. Rerun focused validation affected by a conflict and re-review the new snapshot when necessary.
-
-## 7. Cleanup
-
-Clean a lane only when:
-
-- its commit is integrated, or the user explicitly keeps an isolated branch;
-- integration validation passes;
-- the worktree is clean;
-- evidence and sensitive configuration are archived according to policy;
-- the user did not request preservation.
-
-By default, remove integrated local task branches/worktrees and return to the original main branch. Never delete an unmerged, dirty, running, or still-reviewable worktree.
+Review a frozen candidate, not a range that is still changing. One reviewer may cover several related lanes when context remains manageable. Notifications should report blockers, material decisions, review readiness, and completion; routine progress need not generate durable receipts.

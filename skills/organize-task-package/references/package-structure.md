@@ -1,135 +1,52 @@
-# Task Package Structure and Initialization
+# Package Structure
 
-## Contents
+## Naming and placement
 
-- Naming and placement
-- Single and parallel layouts
-- Initializer usage
-- Localization pass
-- Source-of-truth ordering
+Use `YYYY-MM-DD_<task_slug>` when the target repository has no stronger convention. Freeze the creation date and use a business-readable slug. Update an existing canonical package rather than creating a synonymous directory.
 
-## 1. Naming and placement
+## Compact profile
 
-- Default directory: `YYYY-MM-DD_<task_slug>`.
-- Use the local task creation or start date; do not rename it as modification time changes.
-- Use a stable business slug rather than weak names such as `phase1`, `misc`, or `fixes2`.
-- Let project rules select the parent directory, such as `dev_docs/implementation`, an experiment log, a run-control directory, or a user-specified path.
-- Update an existing canonical task directory in place instead of creating a synonymous package.
-- Project-specific naming and documentation rules take precedence.
+Use one `TASK.md` for ordinary bounded work. It should contain only the sections that help the current implementer or reviewer:
 
-## 2. Single-Worker layout
+- outcome and scope;
+- confirmed decisions and material open choices;
+- work items with implementation boundaries and validation;
+- result or residual risk when useful.
 
-```text
-<task-directory>/
-├── README.md
-├── GOAL.md
-├── design/
-│   ├── 00_discussion-decisions.md
-│   ├── 01_<part-a>.md
-│   └── 02_<part-b>.md
-├── execution/
-│   └── worker-main.md
-└── review/
-    └── reviewer-main.md
-```
+Do not create empty design, execution, review, or coordination directories.
 
-Responsibilities:
+## Resumable profile
 
-- `README.md`: purpose, boundaries, reading order, derived status, and resume entry.
-- `GOAL.md`: objective, non-goals, roles, three-state work items, part gates, and completion conditions.
-- `design/00_discussion-decisions.md`: original goals, confirmed decisions, rejected alternatives, open gates, and sources.
-- `design/NN_<part>.md`: executable work items, design, impact scope, validation, and part audit.
-- `execution/worker-main.md`: append-only factual Worker receipts.
-- `review/reviewer-main.md`: inherited Reviewer findings or explicitly labeled self-review receipts, per-item verdicts, and re-review history.
+Add:
 
-GOAL, execution, and review use human-readable task/role labels and also retain internal task or subagent IDs, `fork_current` / `reuse_fixed` / `fresh` modes, fork sources, and the pre-execution fork point in technical lineage. Root GOAL stores launch recommendations, provenance, confirmation, and actual values. Do not add a duplicate `LAUNCH.md`.
+- `GOAL.md` for current progress, blockers, and resume location;
+- `RESULTS.md` for meaningful implementation and validation facts.
 
-## 3. Parallel layout
+Keep stable task meaning in `TASK.md`, changing progress in `GOAL.md`, and observed results in `RESULTS.md`. Avoid copying the same status or evidence between them.
 
-```text
-<task-directory>/
-├── README.md
-├── GOAL.md
-├── design/
-├── goals/
-│   ├── worker-a.md
-│   └── worker-b.md
-├── execution/
-│   ├── worker-a.md
-│   └── worker-b.md
-├── review/
-│   ├── reviewer-a.md
-│   └── reviewer-b.md
-└── coordination/
-    ├── README.md
-    ├── lanes.md
-    └── integration.md
-```
+## Coordinated profile
 
-The root GOAL is the aggregate entry and has one writer: the Orchestrator. Each Worker maintains its own GOAL and execution record; each Reviewer maintains its own review record.
+Add `COORDINATION.md` when multiple writers or worktrees require explicit ownership. Record:
 
-## 4. Initializer
+- writer or lane ownership;
+- write scope and shared hotspots;
+- dependencies and pause conditions;
+- integration order and current integration state;
+- cleanup obligations.
 
-The script is `scripts/init_task_package.py` in this skill.
+One coordination file is normally enough. Split per-lane files only when lanes are long-lived and independently resumed.
 
-Single Worker:
+## Optional review
 
-```bash
-python scripts/init_task_package.py \
-  --parent /path/to/dev_docs/implementation \
-  --slug repair-provider-boundary \
-  --title "Repair Provider Boundary" \
-  --part service="Service and persistence" \
-  --part surface="Agent and tool surface"
-```
+Add `REVIEW.md` only for a durable independent or formal review. For a short task, review can remain in the conversation or final result. Review history need not be append-only; preserve prior findings only when they explain an unresolved issue or final decision.
 
-Parallel:
+## Extending a package
 
-```bash
-python scripts/init_task_package.py \
-  --parent /path/to/dev_docs/implementation \
-  --slug provider-refactor \
-  --title "Provider Refactor" \
-  --part core="Core contract" \
-  --part adapter="Adapter migration" \
-  --parallel \
-  --worker core-worker="Core Worker" \
-  --worker adapter-worker="Adapter Worker" \
-  --assign core-worker=T01 \
-  --assign adapter-worker=T02
-```
+Extend a package only when the current shape has a demonstrated reader problem:
 
-Arguments:
+- split a long design into topical files when navigation is difficult;
+- split results by lane when concurrent writers would conflict;
+- add a dedicated migration or runbook file when operators need it;
+- add per-worker goals only when workers must resume independently.
 
-- `--parent`: parent directory.
-- `--slug`: stable slug used in `<date>_<slug>`.
-- `--title`: human-readable task title.
-- `--date`: optional frozen `YYYY-MM-DD`; defaults to local date.
-- `--part slug=title`: repeatable; defaults to `main=Main task`.
-- `--parallel`: create the parallel layout.
-- `--worker id=label`: repeatable in parallel mode; at least two.
-- `--assign worker-id=T01,T02`: assign every part exactly once.
-
-The script only creates an English semantic scaffold and never replaces discussion recovery, current-state inspection, or user confirmation.
-
-## 5. Mandatory localization pass
-
-Select the document language using the project rule and conversation-language policy in `SKILL.md`. If it is not English, localize all generated human-facing text before the package is considered ready:
-
-- headings, explanations, table labels, placeholders, and examples;
-- generated link labels and lane prose;
-- default part title when used.
-
-Preserve file names, links, paths, IDs, commands, model names, enum/status values, code, and quoted evidence. After localization, scan for accidental mixed-language scaffolding while respecting project-mandated exceptions.
-
-## 6. Source-of-truth ordering
-
-Resolve conflicts in this order:
-
-1. current code, artifacts, and external-system facts;
-2. exact execution and review evidence;
-3. GOAL aggregate state;
-4. README summary;
-5. historical chat or old plans.
-
-Correct the lower-priority summary rather than altering evidence to make documents appear consistent.
+The number of files is not a proxy for rigor.
