@@ -25,6 +25,12 @@ Use the least expensive review that matches consequence and reachability:
 
 Reviewer independence matters only when the result is claimed as independent. A reviewer must inspect the implementation or artifact rather than only the summary, but it does not need a prescribed creation time, model handshake, or readiness receipt unless the user explicitly requires those controls.
 
+## Decision ownership during execution
+
+Within an authorized task, the task owner can resolve reversible implementation choices and changes to unreleased contracts from current evidence. When the impact is material, use an independent reviewer to challenge the choice and its direct consequences. Agreement between the task owner and reviewer is sufficient to continue when the choice remains within scope and does not alter a user-owned boundary.
+
+Do not treat public-interface, persistence, schema, or authority vocabulary as an automatic reason to stop. Escalate only when the decision changes confirmed product semantics or scope, affects real compatibility or durable data, crosses a security or permission boundary, causes an unauthorized external or destructive effect, incurs user-controlled cost, or requires a product preference that engineering evidence cannot settle.
+
 ## Findings
 
 A blocking finding needs:

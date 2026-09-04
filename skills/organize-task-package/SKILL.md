@@ -79,7 +79,11 @@ Recover the current accepted meaning of the discussion:
 - current code or runtime facts that matter;
 - unresolved choices that would materially change behavior.
 
-Do not reproduce an entire conversation, rejected brainstorming, source inventories, or review history unless it remains necessary to understand the task. Distinguish confirmed decisions from proposals. Ask the user only about unresolved choices that materially affect product semantics, durable data, public interfaces, authority, destructive effects, or other user-owned boundaries.
+Do not reproduce an entire conversation, rejected brainstorming, source inventories, or review history unless it remains necessary to understand the task. Distinguish confirmed decisions from proposals.
+
+Classify unresolved choices by who owns the decision, not merely by whether they mention a public interface, persistence, authority, or another high-consequence topic. Once implementation is authorized, the task owner may resolve in-scope, reversible implementation and unreleased-contract choices from current evidence. Use an independent reviewer when the consequence is material; if the task owner and reviewer converge, record the accepted current decision and continue without interrupting the user. A technical category alone is not a user approval gate.
+
+Ask the user only when the choice changes confirmed user-owned product semantics or scope, breaks a real supported compatibility commitment, acts on real durable data, changes a security or permission boundary, causes an external or destructive effect not already authorized, incurs a material user-controlled cost, or otherwise depends on user preference rather than engineering evidence. Do not mark work blocked while an in-scope decision can still be resolved through implementation evidence or the configured review path.
 
 ## Define useful work items
 
@@ -117,7 +121,7 @@ Read [execution-and-review.md](references/execution-and-review.md) when executio
 
 ## Launch and coordination
 
-Before execution, summarize only choices that still need confirmation or are operationally important: scope, writer ownership, branch/worktree when relevant, validation level, external actions, and any explicitly requested model or session configuration. Do not require a separate launch ceremony when the user has already authorized and configured the work.
+Before execution, summarize only user-owned choices that still need confirmation or operational facts the user needs to know: scope, writer ownership, branch/worktree when relevant, validation level, external actions, and any explicitly requested model or session configuration. Do not require a separate launch ceremony when the user has already authorized and configured the work.
 
 Use parallel writers only for genuinely independent write scopes. For coordinated work, record ownership, dependencies, shared hotspots, integration order, and cleanup in `COORDINATION.md`. Do not require one GOAL, Reviewer, or worktree per Worker unless independent resumption or isolation actually needs it.
 

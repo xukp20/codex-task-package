@@ -31,6 +31,7 @@
 - Keep current progress in one place.
 - Record meaningful evidence rather than a command diary.
 - Scale review to business risk and plausible reachability.
+- Resolve authorized implementation choices through evidence and proportionate review instead of topic-based user gates.
 - Introduce worktrees, per-worker records, receipts, and exact snapshot identity only when coordination or auditability requires them.
 
 ## Install
