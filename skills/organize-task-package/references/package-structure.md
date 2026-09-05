@@ -4,6 +4,12 @@
 
 Use `YYYY-MM-DD_<task_slug>` when the target repository has no stronger convention. Freeze the creation date and use a business-readable slug. Update an existing canonical package rather than creating a synonymous directory.
 
+## Design-first placement
+
+When design is requested before detailed implementation planning, start with a canonical `DESIGN.md` containing the background, goals, constraints, current evidence, proposal, and open decisions. Split a substantial supporting basis into `BACKGROUND.md` only when useful. Small tasks can instead keep distinct design and implementation sections in `TASK.md`.
+
+Do not fill speculative work items or create empty execution records during this stage. After design convergence and any requested user acceptance, add or expand `TASK.md` in the same directory. Keep design rationale in `DESIGN.md`, execution steps and validation in `TASK.md`, and link between them. The profiles below describe the package as implementation planning becomes useful, not a mandatory initial scaffold. Do not rerun the non-overwriting initializer on an existing design directory.
+
 ## Compact profile
 
 Use one `TASK.md` for ordinary bounded work. It should contain only the sections that help the current implementer or reviewer:

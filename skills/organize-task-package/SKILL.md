@@ -21,12 +21,23 @@ For software development or architecture packages, actively consider whether the
 
 ## Route the request
 
-- If the user is still discussing or evaluating a design, do not create task files.
+- If the user is only discussing or evaluating a design, do not create files unless asked to record it.
+- If the user asks to record a design before planning implementation, follow the design-first path below; do not invent detailed work items yet.
 - If the user asks to record or organize work, create or update the smallest suitable package.
 - If the user asks to execute, use the package as a guide; create an active Goal only when explicitly requested or required by the active runtime.
 - If the user asks to audit, compare the current implementation and evidence with the task's accepted decisions. Do not repair without authorization.
 
 The existence of a task package is never execution authorization.
+
+## Design before implementation planning
+
+When the approach is already settled, organize the implementation plan directly. When the user requests design first, record the background, requirements, constraints, relevant evidence, current proposal, and material open questions before expanding implementation work items.
+
+Keep a substantial design in one canonical `DESIGN.md`; for small tasks, separate design and implementation sections in `TASK.md` are enough. A design-first package may initially contain only `DESIGN.md`. Add `BACKGROUND.md` only when the supporting basis needs its own reader-facing location. Do not create empty execution or result records merely to complete a profile.
+
+If the user requests iterative design and `iterate-design-review` is available, load and use it on this same draft without asking again whether to enable it. It owns design convergence; this skill owns document placement and the later task breakdown. If unavailable, disclose that briefly and use ordinary evidence-grounded design review. Without a request for iteration, a single-pass design is sufficient; availability alone does not activate the companion.
+
+Once the design is stable and any user-requested acceptance has occurred, expand `TASK.md` into implementation boundaries, dependencies, validation, and acceptance criteria, linking to the design rather than duplicating it. Design acceptance does not itself authorize execution. Reuse the existing package; the initializer is for new directories, not expanding a design-only directory.
 
 ## Choose the smallest package profile
 
@@ -66,7 +77,7 @@ YYYY-MM-DD_<task_slug>/
 └── COORDINATION.md
 ```
 
-Add `REVIEW.md` to any profile only when a separate review result must be durable. Add extra design, result, or lane files only when the existing files have become difficult for their actual readers to use.
+Add `REVIEW.md` to any profile only when a separate review result must be durable. A requested design-first stage may use `DESIGN.md` as described above; otherwise add extra result or lane files only when the existing files have become difficult for their actual readers to use.
 
 Read [package-structure.md](references/package-structure.md) when choosing or extending a profile. The bundled initializer creates these profiles without overwriting an existing directory. Replace its placeholders and localize its English scaffold before presenting the package as ready.
 

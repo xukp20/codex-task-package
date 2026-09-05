@@ -24,6 +24,8 @@
 
 `REVIEW.md` is optional in every profile. Extra design or lane files are added only when an actual reader needs them.
 
+For design-first work, start with `DESIGN.md` (or a design section in a small `TASK.md`), then expand implementation steps after the design is settled and any requested acceptance is complete. Background and evidence stay with the design unless they need a separate document. If you request iterative design and `iterate-design-review` is available, the skill uses it on the same draft; it is not a required dependency or an automatic extra review stage.
+
 ## Principles
 
 - Preserve confirmed decisions, not the entire history of discussion.
